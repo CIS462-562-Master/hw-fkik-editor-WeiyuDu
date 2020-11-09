@@ -58,10 +58,12 @@ void BVHController::update(double time, bool updateRootXZTranslation)
 	// Hint: the root can both rotate and translate (i.e. has 6 DOFs) while all the other joints just rotate
 	
 	vec3 t = mRootMotion.getValue(time);
-	if (updateRootXZTranslation) {
+	
+	if (!updateRootXZTranslation) {
 		t[0] = 0;
 		t[2] = 0;
 	}
+	
 	mSkeleton->getRootNode()->setLocalTranslation(t);
 	
 	for (int i = 0; i < mSkeleton->getNumJoints(); i++) {
