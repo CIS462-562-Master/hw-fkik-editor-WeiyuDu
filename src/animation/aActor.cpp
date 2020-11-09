@@ -156,21 +156,58 @@ void AActor::solveFootIK(float leftHeight, float rightHeight, bool rotateLeft, b
 	// The normal and the height given are in the world space
 
 	// 1.	Update the local translation of the root based on the left height and the right height
-
+	/*
+	vec3 p_left = leftFoot->getGlobalTranslation();
+	p_left[1] += leftHeight;
+	vec3 p_right = rightFoot->getGlobalTranslation();
+	p_right[1] += rightHeight;
+	ATarget target_L;
+	ATarget target_R;
+	target_L.setGlobalTranslation(p_left);
+	target_R.setGlobalTranslation(p_right);
+	m_IKController->IKSolver_Limb(m_IKController->mLfootID, target_L);
+	m_IKController->IKSolver_Limb(m_IKController->mRfootID, target_R);
 	m_pSkeleton->update();
+	*/
+	
+	vec3 p_root = m_pSkeleton->getRootNode()->getLocalTranslation();
+	p_root[1] += (leftHeight + rightHeight) / 2.0;
+	m_pSkeleton->getRootNode()->setLocalTranslation(p_root);
+	m_pSkeleton->update();
+	
 
 	// 2.	Update the character with Limb-based IK 
-	
 	// Rotate Foot
+	
 	if (rotateLeft)
 	{
 		// Update the local orientation of the left foot based on the left normal
-		;
+		// 
+		mat3 r_left = leftFoot->getLocalRotation();
+		vec3 right = vec3(r_left[0][0], r_left[1][0], r_left[2][0]);
+		vec3 forward = leftNormal.Cross(right);//right.Cross(leftNormal);
+		r_left[0][1] = leftNormal[0]; 
+		r_left[1][1] = leftNormal[1];
+		r_left[2][1] = leftNormal[2];
+		r_left[0][2] = forward[0];
+		r_left[1][2] = forward[1];
+		r_left[2][2] = forward[2];
+		leftFoot->setLocalRotation(r_left);
 	}
 	if (rotateRight)
 	{
 		// Update the local orientation of the right foot based on the right normal
-		;
+		mat3 r_right = rightFoot->getLocalRotation();
+		vec3 right = vec3(r_right[0][0], r_right[1][0], r_right[2][0]);
+		vec3 forward = rightNormal.Cross(right);//right.Cross(rightNormal);
+		r_right[0][1] = rightNormal[0]; // up = leftNormal;
+		r_right[1][1] = rightNormal[1];
+		r_right[2][1] = rightNormal[2];
+		r_right[0][2] = forward[0];
+		r_right[1][2] = forward[1];
+		r_right[2][2] = forward[2];
+		rightFoot->setLocalRotation(r_right);
 	}
 	m_pSkeleton->update();
+	
 }
